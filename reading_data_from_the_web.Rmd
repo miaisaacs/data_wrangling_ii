@@ -124,4 +124,29 @@ brfss_df =
   content("parsed")
 ```
 
+pokemon API
+
+```{r}
+pokemon =
+  GET("https://pokeapi.co/api/v2/pokemon/ditto") |> 
+  content()
+
+pokemon
+```
+
+```{r}
+pokemon$height
+pokemon$abilities
+```
+
+
+
+
+
+
+
+
+
+
+
 
