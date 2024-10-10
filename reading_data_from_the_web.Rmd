@@ -68,11 +68,60 @@ nyc_cost =
   first()
 ```
 
+# using CSS selectors
 
+```{r}
+swm_html = 
+  read_html("https://www.imdb.com/list/ls070150896/")
+```
 
+```{r}
+swm_html |>
+  html_elements(".ipc-title-link-wrapper .ipc-title__text") |>
+  html_text()
 
+swm_html |>
+  html_elements(".metacritic-score-box") |>
+  html_text()
 
+swm_html |>
+  html_elements(".dli-title-metadata-item:nth-child(2)") |>
+  html_text()
 
+swm_df = 
+  tibble(
+    title = title_vec,
+    score = metascore_vec,
+    runtime = runtime_vec)
+```
 
+let's import some books
+
+```{r}
+books_html = read_html ("https://books.toscrape.com/")
+
+books_html |> 
+  html_elements(".price_color") |> 
+  html_text()
+```
+
+# use API
+
+get NYC water data 
+
+```{r}
+nyc_water =
+  GET("https://data.cityofnewyork.us/resource/ia2d-e54m.csv") |> 
+  content()
+```
+
+get BRFSS data
+
+```{r}
+brfss_df =
+   GET("https://chronicdata.cdc.gov/resource/acme-vg9e.csv",
+      query = list("$limit" = 5000)) |> 
+  content("parsed")
+```
 
 
