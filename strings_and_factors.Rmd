@@ -114,6 +114,136 @@ sex_vec = fct_relevel(sex_vec, "male")
 as.numeric(sex_vec)
 ```
 
+# NSDUH
+
+```{r}
+url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+
+drug_use_html = read_html(url)
+```
+
+```{r}
+table_marj = 
+  drug_use_html |> 
+  html_table() |> 
+  first() |>
+  slice(-1) 
+
+table_marj
+```
+
+```{r}
+  table_marj = 
+  drug_use_html |> 
+  html_table() |> 
+  first() |>
+  slice(-1) |> 
+  select(-contains("P value")) |> 
+  pivot_longer(
+    cols = -State,
+    names_to = "age_year",
+    values_to = "percent"
+  ) |> 
+  separate(age_year, into = c("age", "year"), sep = "\\(") |> 
+  mutate(
+    year = str_replace(year, "\\)", ""),
+    percent = str_remove(percent, "[a-c]$"),
+    percent = as.numeric(percent),
+  )
+
+table_marj
+```
+
+```{r}
+table_marj |>
+  filter(age == "12-17") |> 
+  mutate(State = fct_reorder(State, percent)) |> 
+  ggplot(aes(x = State, y = percent, color = year)) + 
+    geom_point() + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+# NYC restaurant inspections
+
+```{r}
+data("rest_inspec")
+
+rest_inspec
+```
+
+```{r}
+rest_inspec |> 
+  group_by(boro, grade) |> 
+  summarize(n = n()) |> 
+  pivot_wider(names_from = grade, values_from = n)
+```
+
+```{r}
+rest_inspec =
+  rest_inspec |> 
+  filter(
+    str_detect(grade, "[A-C]"),
+    !(boro == "Missing")
+  )
+
+rest_inspec
+```
+
+```{r}
+rest_inspec |>
+  mutate(dba = str_to_sentence(dba)) |> 
+  filter(str_detect(dba, "Pizza"))
+```
+
+```{r}
+rest_inspec |>
+  mutate(dba = str_to_sentence(dba)) |> 
+  filter(str_detect(dba, "Pizza")) |> 
+  mutate(boro = fct_infreq(boro)) |> 
+  ggplot(aes(x = boro)) +
+  geom_bar()
+```
+
+```{r}
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |>
+  mutate(boro = fct_infreq(boro)) |>
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar() 
+```
+
+```{r}
+rest_inspec |> 
+  filter(str_detect(dba, regex("pizza", ignore_case = TRUE))) |>
+  mutate(
+    boro = fct_infreq(boro),
+    boro = fct_recode(boro, "The City" = "Manhattan")) |>
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+
+one last thing on factors...
+
+```{r}
+rest_inspec |> 
+  mutate(dba = str_to_sentence(dba)) |> 
+  filter(str_detect(dba, "Pizza")) |> 
+  mutate(boro = fct_infreq(boro)) |> 
+  lm(zipcode ~ boro, data = _)
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
